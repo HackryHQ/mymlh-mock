@@ -1,4 +1,5 @@
 const chai = require('chai');
+const db = require('../src/lib/db');
 const expect = chai.expect;
 const myMLHMock = require('../src');
 const secrets = require('./secrets');
@@ -17,11 +18,13 @@ describe('myMLHMock', function () {
       }).to.throw(Error, 'MyMLH client secret is required.');
     });
 
-    it('should return the instance of myMLHMock', function () {
-      expect(myMLHMock({
+    it('should return the instance of myMLHMock and store the client', function () {
+      const client = {
         clientId: secrets.MY_MLH_CLIENT_ID,
         clientSecret: secrets.MY_MLH_CLIENT_SECRET
-      })).to.eql({});
+      };
+      expect(myMLHMock(client)).to.eql({});
+      expect(db.getClient()).to.eql(client);
     });
 
     it('should populate the modules\'s instance export', function () {

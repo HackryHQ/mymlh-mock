@@ -1,3 +1,5 @@
+const db = require('./lib/db');
+
 module.exports.instance;
 
 module.exports = function (config) {
@@ -14,6 +16,11 @@ module.exports = function (config) {
   if (!config.clientSecret) {
     throw new Error('MyMLH client secret is required.')
   }
+
+  db.setClient({
+    clientId: config.clientId,
+    clientSecret: config.clientSecret
+  });
 
   module.exports.instance = {};
 
