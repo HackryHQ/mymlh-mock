@@ -1,4 +1,5 @@
 const db = require('./lib/db');
+const users = require('./fixtures/users');
 
 module.exports.instance;
 
@@ -28,7 +29,20 @@ module.exports = function (config) {
 
   db.setCallbackURLs(config.callbackURLs);
 
-  module.exports.instance = {};
+  users.authenticatedUsers.forEach(function (authenticatedUser) {
+    db.accessTokens.addForUserId(authenticatedUser.id);
+  });
+
+  module.exports.instance = {
+    getAuthenticatedUsers() {
+      return users.authenticatedUsers.map(function (user) {
+        return {
+          id: user.id,
+          accessToken: db.accessTokens.getForUserId(user.id)
+        };
+      });
+    }
+  };
 
   return module.exports.instance;
 }

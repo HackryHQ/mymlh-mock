@@ -3,6 +3,11 @@ const db = require('../src/lib/db');
 const expect = chai.expect;
 const myMLHMock = require('../src');
 const secrets = require('./secrets');
+const users = require('../src/fixtures/users');
+
+const MY_MLH_MOCK_KEYS = [
+  'getAuthenticatedUsers'
+];
 
 describe('myMLHMock', function () {
   describe('init', function () {
@@ -34,13 +39,25 @@ describe('myMLHMock', function () {
       };
       const config = Object.assign({}, client);
       config.callbackURLs = secrets.CALLBACK_URLS;
-      expect(myMLHMock(config)).to.eql({});
+      expect(myMLHMock(config)).to.have.keys(MY_MLH_MOCK_KEYS);
       expect(db.getClient()).to.eql(client);
     });
 
     it('should populate the modules\'s instance export', function () {
-      expect(myMLHMock.instance).to.eql({});
-      expect(myMLHMock()).to.eql({});
+      expect(myMLHMock.instance).to.have.keys(MY_MLH_MOCK_KEYS);
+      expect(myMLHMock()).to.have.keys(MY_MLH_MOCK_KEYS);
+    });
+  });
+
+  describe('get authenticated users', function () {
+    it('should return an array of user ID, access Token tuples', function () {
+      const tuples = myMLHMock.instance.getAuthenticatedUsers();
+      expect(tuples).to.eql(users.authenticatedUsers.map(function (user) {
+        return {
+          id: user.id,
+          accessToken: db.accessTokens.getForUserId(user.id)
+        };
+      }));
     });
   });
 });

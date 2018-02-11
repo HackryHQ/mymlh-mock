@@ -2,6 +2,7 @@ const chai = require('chai');
 const expect = chai.expect;
 const db = require('../../src/lib/db');
 const secrets = require('../secrets');
+const users = require('../../src/fixtures/users');
 
 describe('db', function () {
   before(function () {
@@ -11,6 +12,12 @@ describe('db', function () {
   describe('init', function () {
     it('should initialize to default values', function () {
       expect(db.get()).to.eql(db.defaultStore);
+    });
+
+    it('should add access tokens for all previously authenticated users', function () {
+      users.authenticatedUsers.forEach(function (authenticatedUser) {
+        expect(db.accessTokens.getForUserId(authenticatedUser.id)).to.have.lengthOf(64);
+      });
     });
   });
 
