@@ -1,10 +1,13 @@
 const random = require('./random');
 const urls = require('./urls');
+const users = require('../fixtures/users');
 
 const defaultStore = Object.freeze({
   clientId: null,
   clientSecret: null,
   callbackURLs: [],
+  // Fake the currently logged in user. Must be an unauthenticated user ID.
+  currentUserId: 2,
   // Map user ID to authorization code.
   authorizationCodes: {},
   // Map user ID to access token.
@@ -36,6 +39,22 @@ const isValidRedirectURL = function (redirectURL) {
   }).reduce(function (accumulator, test) {
     return accumulator ? true : test;
   }, false);
+};
+
+const setCurrentUserId = function (userId) {
+  if (users.getAuthenticatedUserForId(userId) !== null) {
+    throw new Error('Current user ID must be for unauthenticated user.');
+  }
+
+  if (users.getUnauthenticatedUserForId(userId) === null) {
+    throw new Error('Invalid unauthenticated current user ID.');
+  }
+
+  store.currentUserId = userId;
+};
+
+const getCurrentUserId = function () {
+  return store.currentUserId;
 };
 
 const addAuthorizationCodeForUserId = function (userId) {
@@ -75,6 +94,8 @@ module.exports = {
   getClient: getClient,
   setCallbackURLs: setCallbackURLs,
   isValidRedirectURL: isValidRedirectURL,
+  setCurrentUserId: setCurrentUserId,
+  getCurrentUserId: getCurrentUserId,
   authorizationCodes: {
     addForUserId: addAuthorizationCodeForUserId,
     getForUserId: getAuthorizationCodeForUserId

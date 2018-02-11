@@ -68,7 +68,6 @@ describe('db', function () {
     it('should test the validity or redirect URLS', function () {
       db.setCallbackURLs(secrets.CALLBACK_URLS);
       secrets.CALLBACK_URLS.forEach(function (callbackURL) {
-        console.log(callbackURL);
         expect(db.isValidRedirectURL(callbackURL)).to.be.true;
         expect(db.isValidRedirectURL(callbackURL + '/subpath')).to.be.true;
       });
@@ -81,6 +80,26 @@ describe('db', function () {
         expect(db.isValidRedirectURL(invalidRedirectURL)).to.be.false;
         expect(db.isValidRedirectURL(invalidRedirectURL + '/subpath')).to.be.false;
       });
+    });
+  });
+
+  describe('set current user ID', function () {
+    it('should require an unauthenticated user ID', () => {
+      expect(function () {
+        db.setCurrentUserId(1);
+      }).to.throw(Error, 'Current user ID must be for unauthenticated user.');
+    });
+
+    it('should require a valid unauthenticated user ID', () => {
+      expect(function () {
+        db.setCurrentUserId(101);
+      }).to.throw(Error, 'Invalid unauthenticated current user ID.');
+    });
+
+    it('should set the curren user ID', () => {
+      const userId = db.defaultStore.currentUserId;
+      db.setCurrentUserId(userId)
+      expect(db.getCurrentUserId()).to.equal(userId);
     });
   });
 });
