@@ -17,10 +17,16 @@ module.exports = function (config) {
     throw new Error('MyMLH client secret is required.')
   }
 
+  if (!config.callbackURLs) {
+    throw new Error('At least one callback URL is required.')
+  }
+
   db.setClient({
     clientId: config.clientId,
     clientSecret: config.clientSecret
   });
+
+  db.setCallbackURLs(config.callbackURLs);
 
   module.exports.instance = {};
 

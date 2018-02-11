@@ -18,12 +18,23 @@ describe('myMLHMock', function () {
       }).to.throw(Error, 'MyMLH client secret is required.');
     });
 
+    it('should require a MyMLH client secret.', function () {
+      expect(function () {
+        myMLHMock({
+          clientId: secrets.MY_MLH_CLIENT_ID,
+          clientSecret: secrets.MY_MLH_CLIENT_SECRET
+        });
+      }).to.throw(Error, 'At least one callback URL is required.');
+    });
+
     it('should return the instance of myMLHMock and store the client', function () {
       const client = {
         clientId: secrets.MY_MLH_CLIENT_ID,
         clientSecret: secrets.MY_MLH_CLIENT_SECRET
       };
-      expect(myMLHMock(client)).to.eql({});
+      const config = Object.assign({}, client);
+      config.callbackURLs = secrets.CALLBACK_URLS;
+      expect(myMLHMock(config)).to.eql({});
       expect(db.getClient()).to.eql(client);
     });
 

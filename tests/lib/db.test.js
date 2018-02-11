@@ -1,6 +1,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 const db = require('../../src/lib/db');
+const secrets = require('../secrets');
 
 describe('db', function () {
   before(function () {
@@ -60,6 +61,26 @@ describe('db', function () {
     it('should initialize to default values', function () {
       db.accessTokens.addForUserId(2020);
       expect(db.reset()).to.eql(db.defaultStore);
+    });
+  });
+
+  describe('validate redirect URL', function () {
+    it('should test the validity or redirect URLS', function () {
+      db.setCallbackURLs(secrets.CALLBACK_URLS);
+      secrets.CALLBACK_URLS.forEach(function (callbackURL) {
+        console.log(callbackURL);
+        expect(db.isValidRedirectURL(callbackURL)).to.be.true;
+        expect(db.isValidRedirectURL(callbackURL + '/subpath')).to.be.true;
+      });
+
+      [
+        'https://hackry.io',
+        'https://dasbhoard.hackry.io',
+        'https://my.mlh.io'
+      ].forEach(function (invalidRedirectURL) {
+        expect(db.isValidRedirectURL(invalidRedirectURL)).to.be.false;
+        expect(db.isValidRedirectURL(invalidRedirectURL + '/subpath')).to.be.false;
+      });
     });
   });
 });

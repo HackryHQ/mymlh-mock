@@ -1,8 +1,10 @@
 const random = require('./random');
+const urls = require('./urls');
 
 const defaultStore = Object.freeze({
   clientId: null,
   clientSecret: null,
+  callbackURLs: [],
   // Map user ID to authorization code.
   authorizationCodes: {},
   // Map user ID to access token.
@@ -21,6 +23,19 @@ const getClient = function () {
     clientId: store.clientId,
     clientSecret: store.clientSecret
   }
+};
+
+const setCallbackURLs = function (callbackURLs) {
+  store.callbackURLs = callbackURLs;
+};
+
+const isValidRedirectURL = function (redirectURL) {
+  const callbackURLRegexes = store.callbackURLs.map(urls.callback.regex);
+  return callbackURLRegexes.map(function (callbackURLRegex) {
+    return callbackURLRegex.test(redirectURL)
+  }).reduce(function (accumulator, test) {
+    return accumulator ? true : test;
+  }, false);
 };
 
 const addAuthorizationCodeForUserId = function (userId) {
@@ -58,6 +73,8 @@ module.exports = {
   },
   setClient: setClient,
   getClient: getClient,
+  setCallbackURLs: setCallbackURLs,
+  isValidRedirectURL: isValidRedirectURL,
   authorizationCodes: {
     addForUserId: addAuthorizationCodeForUserId,
     getForUserId: getAuthorizationCodeForUserId
