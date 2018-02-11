@@ -1,7 +1,7 @@
-const account = require('./account');
 const chai = require('chai');
 const expect = chai.expect;
 const myMLHMock = require('../src');
+const secrets = require('./secrets');
 
 describe('myMLHMock', function () {
   describe('init', function () {
@@ -12,15 +12,15 @@ describe('myMLHMock', function () {
     it('should require a MyMLH client secret.', function () {
       expect(function () {
         myMLHMock({
-          clientId: account.MY_MLH_CLIENT_ID
+          clientId: secrets.MY_MLH_CLIENT_ID
         });
       }).to.throw(Error, 'MyMLH client secret is required.');
     });
 
     it('should return the instance of myMLHMock', function () {
       expect(myMLHMock({
-        clientId: account.MY_MLH_CLIENT_ID,
-        clientSecret: account
+        clientId: secrets.MY_MLH_CLIENT_ID,
+        clientSecret: secrets.MY_MLH_CLIENT_SECRET
       })).to.eql({});
     });
 
