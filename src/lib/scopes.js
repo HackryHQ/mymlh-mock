@@ -24,7 +24,7 @@ const DEMOGRAPHIC_FIELDS = [
 
 const BIRTHDAY_SCOPE = 'birthday';
 const BIRTHDAY_FIELDS = [
-  'birthday'
+  'date_of_birth'
 ];
 
 const EDUCATION_SCOPE = 'education';

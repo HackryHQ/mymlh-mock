@@ -17,7 +17,7 @@ const SCOPES = [{
   fields: ['gender']
 }, {
   name: 'birthday',
-  fields: ['birthday']
+  fields: ['date_of_birth']
 }, {
   name: 'education',
   fields: ['level_of_study', 'major', 'school']
