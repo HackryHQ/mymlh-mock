@@ -16,97 +16,7 @@ const defaultStore = Object.freeze({
 
 var store = Object.assign({}, defaultStore);
 
-const setClient = function (client) {
-  store.clientId = client.clientId;
-  store.clientSecret = client.clientSecret;
-};
-
-const getClient = function () {
-  return {
-    clientId: store.clientId,
-    clientSecret: store.clientSecret
-  }
-};
-
-const setCallbackURLs = function (callbackURLs) {
-  store.callbackURLs = callbackURLs;
-};
-
-const getCallbackURLs = function () {
-  return store.callbackURLs;
-};
-
-const isValidRedirectURL = function (redirectURL) {
-  const callbackURLRegexes = store.callbackURLs.map(urls.callback.regex);
-  return callbackURLRegexes.map(function (callbackURLRegex) {
-    return callbackURLRegex.test(redirectURL)
-  }).reduce(function (accumulator, test) {
-    return accumulator ? true : test;
-  }, false);
-};
-
-const setCurrentUserId = function (userId) {
-  if (users.getAuthenticatedUserForId(userId) !== null) {
-    throw new Error('Current user ID must be for unauthenticated user.');
-  }
-
-  if (users.getUnauthenticatedUserForId(userId) === null) {
-    throw new Error('Invalid unauthenticated current user ID.');
-  }
-
-  store.currentUserId = userId;
-};
-
-const getCurrentUserId = function () {
-  return store.currentUserId;
-};
-
-const addAuthorizationCodeForUserId = function (userId, { redirectURL, scope } = {}) {
-  if (!store.authorizationCodes[userId]) {
-    // Redirect URL and scope are required for token request validation and the
-    // token response, respectively.
-    store.authorizationCodes[userId] = {
-      code: random.string(16),
-      redirectURL: redirectURL,
-      scope: scope
-    };
-  }
-
-  return store.authorizationCodes[userId].code;
-};
-
-const getAuthorizationCodeForUserId = function (userId) {
-  return store.authorizationCodes[userId];
-};
-
-const addAccessTokenForUserId = function (userId, scope) {
-  if (!store.accessTokens[userId]) {
-    store.accessTokens[userId] = {
-      accessToken: random.string(64),
-      scope: scope
-    }
-  }
-
-  return store.accessTokens[userId].accessToken;
-};
-
-const getAccessTokenForUserId = function (userId) {
-  return store.accessTokens[userId];
-};
-
-const getUserIdForAccessToken = function (accessToken) {
-  var userId = null;
-
-  Object.keys(store.accessTokens).forEach(function (key) {
-    if (store.accessTokens[key].accessToken === accessToken) {
-      userId = key;
-    }
-  });
-
-  return userId;
-};
-
-module.exports = {
+const db = {
   defaultStore: defaultStore,
   get: function () {
     return store;
@@ -115,20 +25,88 @@ module.exports = {
     store = Object.assign({}, defaultStore);
     return store;
   },
-  setClient: setClient,
-  getClient: getClient,
-  setCallbackURLs: setCallbackURLs,
-  getCallbackURLs: getCallbackURLs,
-  isValidRedirectURL: isValidRedirectURL,
-  setCurrentUserId: setCurrentUserId,
-  getCurrentUserId: getCurrentUserId,
+  setClient: function (client) {
+    store.clientId = client.clientId;
+    store.clientSecret = client.clientSecret;
+  },
+  getClient: function () {
+    return {
+      clientId: store.clientId,
+      clientSecret: store.clientSecret
+    };
+  },
+  setCallbackURLs: function (callbackURLs) {
+    store.callbackURLs = callbackURLs;
+  },
+  getCallbackURLs: function () {
+    return store.callbackURLs;
+  },
+  isValidRedirectURL: isValidRedirectURL = function (redirectURL) {
+    const callbackURLRegexes = store.callbackURLs.map(urls.callback.regex);
+    return callbackURLRegexes.map(function (callbackURLRegex) {
+      return callbackURLRegex.test(redirectURL)
+    }).reduce(function (accumulator, test) {
+      return accumulator ? true : test;
+    }, false);
+  },
+  setCurrentUserId: setCurrentUserId = function (userId) {
+    if (users.getAuthenticatedUserForId(userId) !== null) {
+      throw new Error('Current user ID must be for unauthenticated user.');
+    }
+
+    if (users.getUnauthenticatedUserForId(userId) === null) {
+      throw new Error('Invalid unauthenticated current user ID.');
+    }
+
+    store.currentUserId = userId;
+  },
+  getCurrentUserId: function () {
+    return store.currentUserId;
+  },
   authorizationCodes: {
-    addForUserId: addAuthorizationCodeForUserId,
-    getForUserId: getAuthorizationCodeForUserId
+    addForUserId: function (userId, { redirectURL, scope } = {}) {
+      if (!store.authorizationCodes[userId]) {
+        // Redirect URL and scope are required for token request validation and the
+        // token response, respectively.
+        store.authorizationCodes[userId] = {
+          code: random.string(16),
+          redirectURL: redirectURL,
+          scope: scope
+        };
+      }
+
+      return store.authorizationCodes[userId].code;
+    },
+    getForUserId: function (userId) {
+      return store.authorizationCodes[userId];
+    }
   },
   accessTokens: {
-    addForUserId: addAccessTokenForUserId,
-    getForUserId: getAccessTokenForUserId,
-    getUserIdFor: getUserIdForAccessToken
+    addForUserId: function (userId, scope) {
+      if (!store.accessTokens[userId]) {
+        store.accessTokens[userId] = {
+          accessToken: random.string(64),
+          scope: scope
+        }
+      }
+
+      return store.accessTokens[userId].accessToken;
+    },
+    getForUserId: function (userId) {
+      return store.accessTokens[userId];
+    },
+    getUserIdFor: function (accessToken) {
+      var userId = null;
+
+      Object.keys(store.accessTokens).forEach(function (key) {
+        if (store.accessTokens[key].accessToken === accessToken) {
+          userId = key;
+        }
+      });
+
+      return userId;
+    }
   }
 };
+
+module.exports = db;
