@@ -32,6 +32,10 @@ const setCallbackURLs = function (callbackURLs) {
   store.callbackURLs = callbackURLs;
 };
 
+const getCallbackURLs = function () {
+  return store.callbackURLs;
+};
+
 const isValidRedirectURL = function (redirectURL) {
   const callbackURLRegexes = store.callbackURLs.map(urls.callback.regex);
   return callbackURLRegexes.map(function (callbackURLRegex) {
@@ -93,6 +97,7 @@ module.exports = {
   setClient: setClient,
   getClient: getClient,
   setCallbackURLs: setCallbackURLs,
+  getCallbackURLs: getCallbackURLs,
   isValidRedirectURL: isValidRedirectURL,
   setCurrentUserId: setCurrentUserId,
   getCurrentUserId: getCurrentUserId,
