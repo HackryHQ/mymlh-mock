@@ -44,5 +44,8 @@ module.exports = function (config) {
     }
   };
 
+  // Load the mocker.
+  require('./mocker/v2');
+
   return module.exports.instance;
 }
