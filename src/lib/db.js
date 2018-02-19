@@ -64,16 +64,14 @@ const db = {
     return store.currentUserId;
   },
   authorizationCodes: {
-    addForUserId: function (userId, { redirectURL, scope } = {}) {
-      if (!store.authorizationCodes[userId]) {
-        // Redirect URL and scope are required for token request validation and the
-        // token response, respectively.
-        store.authorizationCodes[userId] = {
-          code: random.string(16),
-          redirectURL: redirectURL,
-          scope: scope
-        };
-      }
+    addForUserId: function (userId, data = {}) {
+      // Redirect URL and scope are required for token request validation and the
+      // token response, respectively.
+      store.authorizationCodes[userId] = {
+        code: random.string(16),
+        redirectURL: data.redirectURL,
+        scope: data.scope
+      };
 
       return store.authorizationCodes[userId].code;
     },
@@ -83,12 +81,10 @@ const db = {
   },
   accessTokens: {
     addForUserId: function (userId, scope) {
-      if (!store.accessTokens[userId]) {
-        store.accessTokens[userId] = {
-          accessToken: random.string(64),
-          scope: scope
-        }
-      }
+      store.accessTokens[userId] = {
+        accessToken: random.string(64),
+        scope: scope
+      };
 
       return store.accessTokens[userId].accessToken;
     },

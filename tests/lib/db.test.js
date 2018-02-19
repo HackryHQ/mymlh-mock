@@ -40,10 +40,10 @@ describe('db', function () {
       expect(db.authorizationCodes.getForUserId(userId).code).to.equal(code);
     });
 
-    it('should not allow for authorization codes to be overwritten', function () {
+    it('should allow for authorization codes to be overwritten', function () {
       const previousAuthorization = db.authorizationCodes.getForUserId(userId);
       const code = db.authorizationCodes.addForUserId(userId);
-      expect(code).to.equal(previousAuthorization.code);
+      expect(code).to.not.equal(previousAuthorization.code);
     });
   });
 
@@ -56,10 +56,10 @@ describe('db', function () {
       expect(db.accessTokens.getForUserId(userId).accessToken).to.equal(token);
     });
 
-    it('should not allow for access tokens to be overwritten', function () {
+    it('should allow for access tokens to be overwritten', function () {
       const previousAccessToken = db.accessTokens.getForUserId(userId).accessToken;
       const accessToken = db.accessTokens.addForUserId(userId);
-      expect(accessToken).to.equal(previousAccessToken);
+      expect(accessToken).to.not.equal(previousAccessToken);
     });
   });
 
