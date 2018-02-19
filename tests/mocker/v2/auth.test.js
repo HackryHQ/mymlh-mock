@@ -7,7 +7,6 @@ const qs = require('qs');
 const request = require('request');
 const secrets = require('../../secrets');
 const url = require('url');
-const users = require('../../../src/fixtures/users');
 
 describe('MyMLH OAuth', function () {
   const AUTHORIZE_URL = 'https://my.mlh.io/oauth/authorize';
@@ -246,7 +245,7 @@ describe('MyMLH OAuth', function () {
             code: code
           }
         }, function (error, response, body) {
-          const accessToken = db.accessTokens.getForUserId(db.getCurrentUserId());
+          const { accessToken } = db.accessTokens.getForUserId(db.getCurrentUserId());
           expect(response).to.have.property('statusCode').equal(200);
           expect(body).to.have.property('access_token').to.equal(accessToken);
           expect(body).to.have.property('created_at');
@@ -272,7 +271,7 @@ describe('MyMLH OAuth', function () {
         nock(protocol + '//' + hostname).get(path).query(true).reply(function (path, body, callback) {
           const query = qs.parse(path.split('?')[1]);
           const currentUserId = db.getCurrentUserId();
-          const accessToken = db.accessTokens.getForUserId(currentUserId);
+          const { accessToken } = db.accessTokens.getForUserId(currentUserId);
           expect(query).to.have.property('access_token').equal(accessToken);
           callback(null, null);
         });

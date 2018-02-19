@@ -19,7 +19,7 @@ scope.get('/oauth/authorize').query(true).reply(function (path) {
   const currentUserId = db.getCurrentUserId();
 
   if (query.response_type === 'token') {
-    const accessToken = db.accessTokens.addForUserId(currentUserId);
+    const accessToken = db.accessTokens.addForUserId(currentUserId, query.scope || scopes.getAllScopes().join('+'));
     return [302, undefined, {
       Location: query.redirect_uri + '?access_token=' + accessToken
     }]
@@ -63,9 +63,9 @@ scope.post('/oauth/token').query(true).reply(function (path) {
   }
 
   const currentUserId = db.getCurrentUserId();
-  const authorization = db.authorizationCodes.getForUserId(currentUserId);
+  const { code, scope, redirectURL } = db.authorizationCodes.getForUserId(currentUserId);
 
-  if (query.code !== authorization.code || query.redirect_uri !== authorization.redirectURL) {
+  if (query.code !== code || query.redirect_uri !== redirectURL) {
     return [401, {
       error: 'invalid_grant',
       error_description: 'The provided authorization grant is invalid, expired, revoked, does not match the redirection URI used in the authorization request, or was issued to another client.'
@@ -73,9 +73,9 @@ scope.post('/oauth/token').query(true).reply(function (path) {
   }
 
   return [200, {
-    access_token: db.accessTokens.addForUserId(currentUserId),
+    access_token: db.accessTokens.addForUserId(currentUserId, scope),
     created_at: (new Date).toISOString(),
-    scope: authorization.scope,
+    scope: scope,
     token_type: 'bearer'
   }]
 });

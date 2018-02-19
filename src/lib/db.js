@@ -79,16 +79,31 @@ const getAuthorizationCodeForUserId = function (userId) {
   return store.authorizationCodes[userId];
 };
 
-const addAccessTokenForUserId = function (userId) {
+const addAccessTokenForUserId = function (userId, scope) {
   if (!store.accessTokens[userId]) {
-    store.accessTokens[userId] = random.string(64);
+    store.accessTokens[userId] = {
+      accessToken: random.string(64),
+      scope: scope
+    }
   }
 
-  return store.accessTokens[userId];
+  return store.accessTokens[userId].accessToken;
 };
 
 const getAccessTokenForUserId = function (userId) {
   return store.accessTokens[userId];
+};
+
+const getUserIdForAccessToken = function (accessToken) {
+  var userId = null;
+
+  Object.keys(store.accessTokens).forEach(function (key) {
+    if (store.accessTokens[key].accessToken === accessToken) {
+      userId = key;
+    }
+  });
+
+  return userId;
 };
 
 module.exports = {
@@ -113,6 +128,7 @@ module.exports = {
   },
   accessTokens: {
     addForUserId: addAccessTokenForUserId,
-    getForUserId: getAccessTokenForUserId
+    getForUserId: getAccessTokenForUserId,
+    getUserIdFor: getUserIdForAccessToken
   }
 };

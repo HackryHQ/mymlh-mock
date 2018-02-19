@@ -16,7 +16,7 @@ describe('db', function () {
 
     it('should add access tokens for all previously authenticated users', function () {
       users.authenticatedUsers.forEach(function (authenticatedUser) {
-        expect(db.accessTokens.getForUserId(authenticatedUser.id)).to.have.lengthOf(64);
+        expect(db.accessTokens.getForUserId(authenticatedUser.id).accessToken).to.have.lengthOf(64);
       });
     });
   });
@@ -53,13 +53,13 @@ describe('db', function () {
     it('should add an access token for a user ID', function () {
       const token = db.accessTokens.addForUserId(userId);
       expect(token).to.have.lengthOf(64);
-      expect(db.accessTokens.getForUserId(userId)).to.equal(token);
+      expect(db.accessTokens.getForUserId(userId).accessToken).to.equal(token);
     });
 
     it('should not allow for access tokens to be overwritten', function () {
-      const previousCode = db.accessTokens.getForUserId(userId);
-      const code = db.accessTokens.addForUserId(userId);
-      expect(code).to.equal(previousCode);
+      const previousAccessToken = db.accessTokens.getForUserId(userId).accessToken;
+      const accessToken = db.accessTokens.addForUserId(userId);
+      expect(accessToken).to.equal(previousAccessToken);
     });
   });
 
