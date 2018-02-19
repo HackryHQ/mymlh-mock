@@ -3,11 +3,10 @@ const db = require('../../../src/lib/db');
 const expect = chai.expect;
 const myMLHMock = require('../../../src');
 const nock = require('nock');
-const qs = require('qs');
+const redirects  = require('./redirects');
 const request = require('request');
 const scopes = require('../../../src/lib/scopes');
 const secrets = require('../../secrets');
-const url = require('url');
 const users = require('../../../src/fixtures/users');
 
 const USER_URL = 'https://my.mlh.io/api/v2/user.json';
@@ -60,6 +59,39 @@ describe('user', function () {
       const user = scopes.applyScopesToUser(scopes.getAllScopes(), users.getUserForId(userId));
       expect(body).to.deep.equal(user)
       done();
+    });
+  });
+
+  it('should only provide scope properties', function (done) {
+    const { clientId, clientSecret } = db.getClient();
+    const requestedScopes = ['email', 'event'];
+
+    redirects.mockAuthorizationCodeFlow();
+
+    request({
+      url: 'https://my.mlh.io/oauth/authorize',
+      qs: {
+        response_type: 'code',
+        client_id: clientId,
+        redirect_uri: db.getCallbackURLs()[0],
+        scope: requestedScopes.join('+')
+      }
+    }, function (error, response, body) {
+      const accessToken = body.access_token;
+      const currentUserId = db.getCurrentUserId();
+
+      request({
+        url: USER_URL,
+        json: true,
+        qs: {
+          access_token: db.accessTokens.getForUserId(currentUserId).accessToken
+        }
+      }, function (error, response, body) {
+        expect(response).to.have.property('statusCode').equal(200);
+        const user = scopes.applyScopesToUser(requestedScopes, users.getUserForId(currentUserId));
+        expect(body).to.deep.equal(user)
+        done();
+      });
     });
   });
 })

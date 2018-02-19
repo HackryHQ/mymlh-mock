@@ -3,10 +3,9 @@ const db = require('../../../src/lib/db');
 const expect = chai.expect;
 const myMLHMock = require('../../../src');
 const nock = require('nock');
-const qs = require('qs');
+const redirects  = require('./redirects');
 const request = require('request');
 const secrets = require('../../secrets');
-const url = require('url');
 
 describe('MyMLH OAuth', function () {
   const AUTHORIZE_URL = 'https://my.mlh.io/oauth/authorize';
@@ -21,26 +20,7 @@ describe('MyMLH OAuth', function () {
         callbackURLs: secrets.CALLBACK_URLS
       });
 
-      db.getCallbackURLs().forEach(function (callbackURL) {
-        const { protocol, hostname, path } = url.parse(callbackURL);
-        nock(protocol + '//' + hostname).get(path).query(true).reply(function (path, body, callback) {
-          const query = qs.parse(path.split('?')[1]);
-          const client = db.getClient();
-          request({
-            method: 'POST',
-            url: 'https://my.mlh.io/oauth/token',
-            qs: {
-              client_id: client.clientId,
-              client_secret: client.clientSecret,
-              code: query.code,
-              redirect_uri: callbackURL,
-              grant_type: 'authorization_code'
-            }
-          }, function (error, response, body) {
-            return callback(error, body)
-          });
-        });
-      });
+      redirects.mockAuthorizationCodeFlow();
     });
 
     after(function () {
@@ -266,16 +246,7 @@ describe('MyMLH OAuth', function () {
         callbackURLs: secrets.CALLBACK_URLS
       });
 
-      db.getCallbackURLs().forEach(function (callbackURL) {
-        const { protocol, hostname, path } = url.parse(callbackURL);
-        nock(protocol + '//' + hostname).get(path).query(true).reply(function (path, body, callback) {
-          const query = qs.parse(path.split('?')[1]);
-          const currentUserId = db.getCurrentUserId();
-          const { accessToken } = db.accessTokens.getForUserId(currentUserId);
-          expect(query).to.have.property('access_token').equal(accessToken);
-          callback(null, null);
-        });
-      });
+      redirects.mockImplicitFlow();
     });
 
     after(function () {
@@ -287,14 +258,16 @@ describe('MyMLH OAuth', function () {
         const { clientId } =  db.getClient();
         request({
           url: AUTHORIZE_URL,
+          json: true,
           qs: {
             response_type: 'token',
             redirect_uri: db.getCallbackURLs()[0],
             client_id: clientId
           }
-        }, function (error, response, body) {
-          expect(error).to.be.null;
-          expect(body).to.be.empty;
+        }, function (error, response, query) {
+          const currentUserId = db.getCurrentUserId();
+          const { accessToken } = db.accessTokens.getForUserId(currentUserId);
+          expect(query).to.have.property('access_token').equal(accessToken);
           done();
         });
       });
