@@ -257,4 +257,48 @@ describe('MyMLH OAuth', function () {
       });
     });
   });
+
+  describe('Implicit Flow', function () {
+    before(function () {
+      myMLHMock.instance = null;
+      myMLHMock({
+        clientId: secrets.MY_MLH_CLIENT_ID,
+        clientSecret: secrets.MY_MLH_CLIENT_SECRET,
+        callbackURLs: secrets.CALLBACK_URLS
+      });
+
+      db.getCallbackURLs().forEach(function (callbackURL) {
+        const { protocol, hostname, path } = url.parse(callbackURL);
+        nock(protocol + '//' + hostname).get(path).query(true).reply(function (path, body, callback) {
+          const query = qs.parse(path.split('?')[1]);
+          const currentUserId = db.getCurrentUserId();
+          const accessToken = db.accessTokens.getForUserId(currentUserId);
+          expect(query).to.have.property('access_token').equal(accessToken);
+          callback(null, null);
+        });
+      });
+    });
+
+    after(function () {
+      myMLHMock.instance = null;
+    });
+
+    describe('authorize and access token', function () {
+      it('should return an access token for the current user', function (done) {
+        const { clientId } =  db.getClient();
+        request({
+          url: AUTHORIZE_URL,
+          qs: {
+            response_type: 'token',
+            redirect_uri: db.getCallbackURLs()[0],
+            client_id: clientId
+          }
+        }, function (error, response, body) {
+          expect(error).to.be.null;
+          expect(body).to.be.empty;
+          done();
+        });
+      });
+    });
+  });
 });

@@ -8,7 +8,7 @@ const scope = nock('https://my.mlh.io').persist();
 scope.get('/oauth/authorize').query(true).reply(function (path) {
   const query = qs.parse(path.split('?')[1]);``
 
-  if (query.response_type !== 'code') {
+  if (query.response_type !== 'code' && query.response_type !== 'token') {
     return [200, 'The authorization server does not support this response type.'];
   } else if (db.getClient().clientId !== query.client_id) {
     return [200, 'Client authentication failed due to unknown client, no client authentication included, or unsupported authentication method.']
@@ -16,7 +16,16 @@ scope.get('/oauth/authorize').query(true).reply(function (path) {
     return [200, 'The redirect uri included is not valid.']
   }
 
-  const code = db.authorizationCodes.addForUserId(db.getCurrentUserId(), {
+  const currentUserId = db.getCurrentUserId();
+
+  if (query.response_type === 'token') {
+    const accessToken = db.accessTokens.addForUserId(currentUserId);
+    return [302, undefined, {
+      Location: query.redirect_uri + '?access_token=' + accessToken
+    }]
+  }
+
+  const code = db.authorizationCodes.addForUserId(currentUserId, {
     redirectURL: query.redirect_uri,
     scope: query.scope || scopes.getAllScopes().join('+')
   });
