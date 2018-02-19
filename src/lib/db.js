@@ -61,12 +61,18 @@ const getCurrentUserId = function () {
   return store.currentUserId;
 };
 
-const addAuthorizationCodeForUserId = function (userId) {
+const addAuthorizationCodeForUserId = function (userId, { redirectURL, scope } = {}) {
   if (!store.authorizationCodes[userId]) {
-    store.authorizationCodes[userId] = random.string(16);
+    // Redirect URL and scope are required for token request validation and the
+    // token response, respectively.
+    store.authorizationCodes[userId] = {
+      code: random.string(16),
+      redirectURL: redirectURL,
+      scope: scope
+    };
   }
 
-  return store.authorizationCodes[userId];
+  return store.authorizationCodes[userId].code;
 };
 
 const getAuthorizationCodeForUserId = function (userId) {

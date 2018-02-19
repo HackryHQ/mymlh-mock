@@ -37,14 +37,13 @@ describe('db', function () {
 
     it('should add an authorization code for a user ID', function () {
       const code = db.authorizationCodes.addForUserId(userId);
-      expect(code).to.have.lengthOf(16);
-      expect(db.authorizationCodes.getForUserId(userId)).to.equal(code);
+      expect(db.authorizationCodes.getForUserId(userId).code).to.equal(code);
     });
 
     it('should not allow for authorization codes to be overwritten', function () {
-      const previousCode = db.authorizationCodes.getForUserId(userId);
+      const previousAuthorization = db.authorizationCodes.getForUserId(userId);
       const code = db.authorizationCodes.addForUserId(userId);
-      expect(code).to.equal(previousCode);
+      expect(code).to.equal(previousAuthorization.code);
     });
   });
 
