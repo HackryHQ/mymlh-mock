@@ -50,12 +50,17 @@ const unauthenticatedUsers = [
 module.exports = {
   getAuthenticatedUserForId: function (userId) {
     return authenticatedUsers.filter(function (user) {
-      return user.id === userId;
+      return user.id == userId;
     })[0] || null;
   },
   getUnauthenticatedUserForId: function (userId) {
     return unauthenticatedUsers.filter(function (user) {
-      return user.id === userId;
+      return user.id == userId;
+    })[0] || null;
+  },
+  getUserForId: function(userId) {
+    return authenticatedUsers.concat(unauthenticatedUsers).filter(function (user) {
+      return user.id == userId;
     })[0] || null;
   },
   authenticatedUsers: authenticatedUsers,
