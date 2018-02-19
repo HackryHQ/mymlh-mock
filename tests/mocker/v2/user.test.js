@@ -46,7 +46,7 @@ describe('user', function () {
   });
 
   it('should return user for an access token', function (done) {
-    const userId = 1;
+    const userId = myMLHMock.instance.getAuthenticatedUsers()[0].id;
 
     request({
       url: USER_URL,
