@@ -1,24 +1,25 @@
 const db = require('../../lib/db');
 const nock = require('nock');
 const qs = require('qs');
+const request = require('request');
 const scopes = require('../../lib/scopes');
 
 nock('https://my.mlh.io')
   .persist()
   .get('/oauth/authorize')
   .query(true)
-  .reply((path) => {
+  .reply((path, emptyBody, callback) => {
     const query = qs.parse(path.split('?')[1]);
 
     if (query.response_type !== 'code' && query.response_type !== 'token') {
-      return [200, 'The authorization server does not support this response type.'];
+      return callback(null, [200, 'The authorization server does not support this response type.']);
     } else if (db.getClient().clientId !== query.client_id) {
-      return [
+      return callback(null, [
         200,
         'Client authentication failed due to unknown client, no client authentication included, or unsupported authentication method.',
-      ];
+      ]);
     } else if (!query.redirect_uri || !db.isValidRedirectURL(query.redirect_uri)) {
-      return [200, 'The redirect uri included is not valid.'];
+      return callback(null, [200, 'The redirect uri included is not valid.']);
     }
 
     const currentUserId = db.getCurrentUserId();
@@ -27,13 +28,13 @@ nock('https://my.mlh.io')
 
     if (query.response_type === 'token') {
       const accessToken = db.accessTokens.addForUserId(currentUserId, permittedScope);
-      return [
+      return callback(null, [
         302,
         undefined,
         {
           Location: `${query.redirect_uri}?access_token=${accessToken}`,
         },
-      ];
+      ]);
     }
 
     const code = db.authorizationCodes.addForUserId(currentUserId, {
@@ -41,13 +42,17 @@ nock('https://my.mlh.io')
       scope: permittedScope,
     });
 
-    return [
-      302,
-      undefined,
+    return request(
       {
-        Location: `${query.redirect_uri}?code=${code}`,
+        method: 'GET',
+        url: query.redirect_uri,
+        followRedirect: false,
+        qs: {
+          code,
+        },
       },
-    ];
+      (error, response, body) => callback(error, [response.statusCode, body, response.headers]),
+    );
   });
 
 nock('https://my.mlh.io')

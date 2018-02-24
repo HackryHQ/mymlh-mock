@@ -28,5 +28,11 @@ nock('https://my.mlh.io')
     const user = db.users.getUserForId(userId);
 
     // Prioritize user fixture "scopes" key.
-    return [200, scopes.applyScopesToUser(scope.split('+'), user)];
+    return [
+      200,
+      {
+        status: 'OK',
+        data: scopes.applyScopesToUser(scope.split('+'), user),
+      },
+    ];
   });

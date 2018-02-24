@@ -66,7 +66,10 @@ describe('users', () => {
           .to.have.property('statusCode')
           .equal(200);
         const user = scopes.applyScopesToUser(scopes.getAllScopes(), db.users.getUserForId(userId));
-        expect(body).to.deep.equal(user);
+        expect(body).to.deep.equal({
+          status: 'OK',
+          data: user,
+        });
         done();
       },
     );
@@ -93,7 +96,10 @@ describe('users', () => {
           .to.have.property('statusCode')
           .equal(200);
         const user = scopes.applyScopesToUser(['email', 'event'], db.users.getUserForId(userId));
-        expect(body).to.deep.equal(user);
+        expect(body).to.deep.equal({
+          status: 'OK',
+          data: user,
+        });
         done();
       },
     );
@@ -134,7 +140,10 @@ describe('users', () => {
               requestedScopes,
               db.users.getUserForId(currentUserId),
             );
-            expect(body2).to.deep.equal(user);
+            expect(body2).to.deep.equal({
+              status: 'OK',
+              data: user,
+            });
             done();
           },
         );
