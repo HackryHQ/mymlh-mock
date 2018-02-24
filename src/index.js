@@ -1,29 +1,28 @@
 const db = require('./lib/db');
+require('./mocker/v2');
 
-module.exports.instance;
+module.exports.instance = null;
 
-module.exports = function (config) {
+module.exports = (config = {}) => {
   if (module.exports.instance) {
     return module.exports.instance;
   }
 
-  config = config || {};
-
   if (!config.clientId) {
-    throw new Error('MyMLH client id is required.')
+    throw new Error('MyMLH client id is required.');
   }
 
   if (!config.clientSecret) {
-    throw new Error('MyMLH client secret is required.')
+    throw new Error('MyMLH client secret is required.');
   }
 
   if (!config.callbackURLs) {
-    throw new Error('At least one callback URL is required.')
+    throw new Error('At least one callback URL is required.');
   }
 
   db.setClient({
     clientId: config.clientId,
-    clientSecret: config.clientSecret
+    clientSecret: config.clientSecret,
   });
 
   db.setCallbackURLs(config.callbackURLs);
@@ -37,24 +36,17 @@ module.exports = function (config) {
 
   module.exports.instance = {
     getAuthenticatedUsers() {
-      return db.users.getAuthenticatedUsers().map(function (user) {
-        return {
-          id: user.id,
-          accessToken: db.accessTokens.getForUserId(user.id)
-        };
-      });
+      return db.users.getAuthenticatedUsers().map(user => ({
+        id: user.id,
+        accessToken: db.accessTokens.getForUserId(user.id),
+      }));
     },
     getUnauthenticatedUsers() {
-      return db.users.getUnauthenticatedUsers().map(function (user) {
-        return {
-          id: user.id
-        };
-      });
-    }
+      return db.users.getUnauthenticatedUsers().map(user => ({
+        id: user.id,
+      }));
+    },
   };
 
-  // Load the mocker.
-  require('./mocker/v2');
-
   return module.exports.instance;
-}
+};

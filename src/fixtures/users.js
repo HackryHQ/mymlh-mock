@@ -19,11 +19,11 @@ const authenticatedUsers = [
     gender: 'Male',
     phone_number: '+1 555 555 5555',
     school: {
-      'id': 1,
-      'name': 'Rutgers University'
+      id: 1,
+      name: 'Rutgers University',
     },
-    didPermitScopes: scopes.getAllScopes()
-  }
+    didPermitScopes: scopes.getAllScopes(),
+  },
 ];
 
 const unauthenticatedUsers = [
@@ -36,22 +36,22 @@ const unauthenticatedUsers = [
     last_name: 'Doe',
     level_of_study: 'Undergraduate',
     major: 'Computer Science',
-    shirt_size: 'Women\'s - L',
+    shirt_size: "Women's - L",
     dietary_restrictions: 'None',
     special_needs: null,
     date_of_birth: '1985-10-18',
     gender: 'Female',
     phone_number: '+1 555 555 5555',
     school: {
-      'id': 2,
-      'name': 'Stony Brook University'
+      id: 2,
+      name: 'Stony Brook University',
     },
-    willPermitScopes: scopes.getAllScopes()
-  }
+    willPermitScopes: scopes.getAllScopes(),
+  },
 ];
 
 module.exports = {
   authenticatedUsers,
   unauthenticatedUsers,
-  MAX_RESERVED_USER_ID
+  MAX_RESERVED_USER_ID,
 };

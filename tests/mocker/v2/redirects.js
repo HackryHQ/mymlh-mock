@@ -4,39 +4,46 @@ const qs = require('qs');
 const request = require('request');
 const url = require('url');
 
-const redirects ={
-  mockAuthorizationCodeFlow: function () {
+const redirects = {
+  mockAuthorizationCodeFlow() {
     const { clientId, clientSecret } = db.getClient();
 
-    db.getCallbackURLs().forEach(function (callbackURL) {
+    db.getCallbackURLs().forEach((callbackURL) => {
       const { protocol, hostname, path } = url.parse(callbackURL);
-      nock(protocol + '//' + hostname).get(path).query(true).reply(function (path, body, callback) {
-        const query = qs.parse(path.split('?')[1]);
-        request({
-          method: 'POST',
-          url: 'https://my.mlh.io/oauth/token',
-          qs: {
-            client_id: clientId,
-            client_secret: clientSecret,
-            code: query.code,
-            redirect_uri: callbackURL,
-            grant_type: 'authorization_code'
-          }
-        }, function (error, response, body) {
-          return callback(error, body)
+      nock(`${protocol}//${hostname}`)
+        .get(path)
+        .query(true)
+        .reply((requestPath, body, callback) => {
+          const query = qs.parse(requestPath.split('?')[1]);
+          request(
+            {
+              method: 'POST',
+              url: 'https://my.mlh.io/oauth/token',
+              qs: {
+                client_id: clientId,
+                client_secret: clientSecret,
+                code: query.code,
+                redirect_uri: callbackURL,
+                grant_type: 'authorization_code',
+              },
+            },
+            (e, r, b) => callback(e, b),
+          );
         });
-      });
     });
   },
-  mockImplicitFlow: function () {
-    db.getCallbackURLs().forEach(function (callbackURL) {
+  mockImplicitFlow() {
+    db.getCallbackURLs().forEach((callbackURL) => {
       const { protocol, hostname, path } = url.parse(callbackURL);
-      nock(protocol + '//' + hostname).get(path).query(true).reply(function (path, body, callback) {
-        const query = qs.parse(path.split('?')[1]);
-        callback(null, query);
-      });
+      nock(`${protocol}//${hostname}`)
+        .get(path)
+        .query(true)
+        .reply((requestPath, body, callback) => {
+          const query = qs.parse(requestPath.split('?')[1]);
+          callback(null, query);
+        });
     });
-  }
+  },
 };
 
 module.exports = redirects;

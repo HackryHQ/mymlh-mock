@@ -14,111 +14,109 @@ const defaultStore = {
   // Map user ID to access token.
   accessTokens: {},
   authenticatedUsers: userFixtures.authenticatedUsers,
-  unauthenticatedUsers: userFixtures.unauthenticatedUsers
+  unauthenticatedUsers: userFixtures.unauthenticatedUsers,
 };
 
-var store = JSON.parse(JSON.stringify(defaultStore));
+let store = JSON.parse(JSON.stringify(defaultStore));
 
-const getUserForId = function(userId) {
-  return store.authenticatedUsers.concat(store.unauthenticatedUsers).filter(function (user) {
-    return user.id == userId;
-  })[0] || null;
-};
+const getUserForId = userId =>
+  store.authenticatedUsers
+    .concat(store.unauthenticatedUsers)
+    .filter(user => user.id === userId)[0] || null;
 
-const checkUserId = function (userId) {
+const checkUserId = (userId) => {
   if (userId === undefined || userId === null) {
     throw new Error('All users must have an id.');
   }
 
   if (userId < userFixtures.MAX_RESERVED_USER_ID) {
-    throw new Error('User ids below ' + userFixtures.MAX_RESERVED_USER_ID + ' are restricted.');
+    throw new Error(`User ids below ${userFixtures.MAX_RESERVED_USER_ID} are restricted.`);
   }
 
   if (getUserForId(userId) !== null) {
-    throw new Error('Duplicate user id: ' + userId);
+    throw new Error(`Duplicate user id: ${userId}`);
   }
-}
+};
 
-const addAccessTokenForUserId = function (userId, scope) {
+const addAccessTokenForUserId = (userId, scope) => {
   store.accessTokens[userId] = {
     accessToken: random.string(64),
-    scope: scope
+    scope,
   };
 
   return store.accessTokens[userId].accessToken;
 };
 
-const addAuthenticatedUserAccessTokens = function () {
-  users.getAuthenticatedUsers().forEach(function (authenticatedUser) {
+const users = {
+  getAuthenticatedUserForId(userId) {
+    return store.authenticatedUsers.filter(user => user.id === userId)[0] || null;
+  },
+  getUnauthenticatedUserForId(userId) {
+    return store.unauthenticatedUsers.filter(user => user.id === userId)[0] || null;
+  },
+  getUserForId,
+  addAuthenticatedUser(user = {}) {
+    checkUserId(user.id);
+    const didPermitScopes = (user.didPermitScopes || scopes.getAllScopes()).join('+');
+    addAccessTokenForUserId(user.id, didPermitScopes);
+    store.authenticatedUsers.push({
+      ...user,
+      didPermitScopes,
+    });
+  },
+  addUnauthenticatedUser(user = {}) {
+    checkUserId(user.id);
+    store.unauthenticatedUsers.push({
+      ...user,
+      willPermitScopes: (user.willPermitScopes || scopes.getAllScopes()).join('+'),
+    });
+  },
+  getAuthenticatedUsers() {
+    return store.authenticatedUsers;
+  },
+  getUnauthenticatedUsers() {
+    return store.unauthenticatedUsers;
+  },
+};
+
+const addAuthenticatedUserAccessTokens = () => {
+  users.getAuthenticatedUsers().forEach((authenticatedUser) => {
     addAccessTokenForUserId(authenticatedUser.id, authenticatedUser.didPermitScopes.join('+'));
   });
 };
 
-const users = {
-  getAuthenticatedUserForId: function (userId) {
-    return store.authenticatedUsers.filter(function (user) {
-      return user.id == userId;
-    })[0] || null;
-  },
-  getUnauthenticatedUserForId: function (userId) {
-    return store.unauthenticatedUsers.filter(function (user) {
-      return user.id == userId;
-    })[0] || null;
-  },
-  getUserForId,
-  addAuthenticatedUser: function (user = {}) {
-    checkUserId(user.id);
-    user.didPermitScopes = user.didPermitScopes || scopes.getAllScopes();
-    addAccessTokenForUserId(user.id, user.didPermitScopes);
-    store.authenticatedUsers.push(user);
-  },
-  addUnauthenticatedUser: function (user = {}) {
-    checkUserId(user.id);
-    user.willPermitScopes = user.willPermitScopes || scopes.getAllScopes();
-    store.unauthenticatedUsers.push(user);
-  },
-  getAuthenticatedUsers: function () {
-    return store.authenticatedUsers;
-  },
-  getUnauthenticatedUsers: function () {
-    return store.unauthenticatedUsers;
-  }
-};
-
 const db = {
-  defaultStore: defaultStore,
-  get: function () {
+  defaultStore,
+  get() {
     return store;
   },
-  reset: function () {
+  reset() {
     store = JSON.parse(JSON.stringify(defaultStore));
     return store;
   },
-  setClient: function (client) {
+  setClient(client) {
     store.clientId = client.clientId;
     store.clientSecret = client.clientSecret;
   },
-  getClient: function () {
+  getClient() {
     return {
       clientId: store.clientId,
-      clientSecret: store.clientSecret
+      clientSecret: store.clientSecret,
     };
   },
-  setCallbackURLs: function (callbackURLs) {
+  setCallbackURLs(callbackURLs) {
     store.callbackURLs = callbackURLs;
   },
-  getCallbackURLs: function () {
+  getCallbackURLs() {
     return store.callbackURLs;
   },
-  isValidRedirectURL: isValidRedirectURL = function (redirectURL) {
+  isValidRedirectURL(redirectURL) {
     const callbackURLRegexes = store.callbackURLs.map(urls.callback.regex);
-    return callbackURLRegexes.map(function (callbackURLRegex) {
-      return callbackURLRegex.test(redirectURL)
-    }).reduce(function (accumulator, test) {
-      return accumulator ? true : test;
-    }, false);
+    return callbackURLRegexes
+      .map(callbackURLRegex => callbackURLRegex.test(redirectURL))
+      .reduce((accumulator, test) => (accumulator ? true : test), false);
   },
-  setCurrentUserId: setCurrentUserId = function (userId) {
+  setCurrentUserId(userId) {
     if (users.getAuthenticatedUserForId(userId) !== null) {
       throw new Error('Current user ID must be for unauthenticated user.');
     }
@@ -129,44 +127,44 @@ const db = {
 
     store.currentUserId = userId;
   },
-  getCurrentUserId: function () {
+  getCurrentUserId() {
     return store.currentUserId;
   },
   authorizationCodes: {
-    addForUserId: function (userId, data = {}) {
+    addForUserId(userId, data = {}) {
       // Redirect URL and scope are required for token request validation and the
       // token response, respectively.
       store.authorizationCodes[userId] = {
         code: random.string(16),
         redirectURL: data.redirectURL,
-        scope: data.scope
+        scope: data.scope,
       };
 
       return store.authorizationCodes[userId].code;
     },
-    getForUserId: function (userId) {
+    getForUserId(userId) {
       return store.authorizationCodes[userId];
-    }
+    },
   },
   accessTokens: {
     addForAuthenticatedUsers: addAuthenticatedUserAccessTokens,
     addForUserId: addAccessTokenForUserId,
-    getForUserId: function (userId) {
+    getForUserId(userId) {
       return store.accessTokens[userId];
     },
-    getUserIdFor: function (accessToken) {
-      var userId = null;
+    getUserIdFor(accessToken) {
+      let userId = null;
 
-      Object.keys(store.accessTokens).forEach(function (key) {
-        if (store.accessTokens[key].accessToken === accessToken) {
+      Object.keys(store.accessTokens).forEach((key) => {
+        if (store.accessTokens[`${key}`].accessToken === accessToken) {
           userId = key;
         }
       });
-
-      return userId;
-    }
+      if (userId === null) return userId;
+      return Number.isNaN(userId) ? userId : Number(userId);
+    },
   },
-  users
+  users,
 };
 
 module.exports = db;

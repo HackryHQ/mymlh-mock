@@ -7,23 +7,15 @@
     "test": "nyc --reporter=html mocha \"tests/**/*.test.js\""
   },
   "nyc": {
-    "exclude": [
-      "tests/**"
-    ]
+    "exclude": ["tests/**"]
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/HackryHQ/mymlh-mock.git"
   },
-  "keywords": [
-    "MyMLH",
-    "hackathon",
-    "mock"
-  ],
+  "keywords": ["MyMLH", "hackathon", "mock"],
   "author": "Hackry <support@hackry.io> (https://hackry.io)",
-  "contributors": [
-    "Jack Mousseau <jack@hackry.io>"
-  ],
+  "contributors": ["Jack Mousseau <jack@hackry.io>"],
   "license": "MIT",
   "bugs": {
     "url": "https://github.com/HackryHQ/mymlh-mock/issues"
@@ -31,6 +23,9 @@
   "homepage": "https://github.com/HackryHQ/mymlh-mock#readme",
   "devDependencies": {
     "chai": "^4.1.2",
+    "eslint": "^4.18.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-import": "^2.9.0",
     "mocha": "^5.0.0",
     "nyc": "^11.4.1",
     "request": "^2.83.0"
