@@ -80,7 +80,7 @@ const users = {
   getAuthenticatedUsers: function () {
     return store.authenticatedUsers;
   },
-  unauthenticatedUsers: function () {
+  getUnauthenticatedUsers: function () {
     return store.unauthenticatedUsers;
   }
 };

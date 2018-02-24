@@ -37,6 +37,13 @@ module.exports = function (config) {
           accessToken: db.accessTokens.getForUserId(user.id)
         };
       });
+    },
+    getUnauthenticatedUsers() {
+      return db.users.getUnauthenticatedUsers().map(function (user) {
+        return {
+          id: user.id
+        };
+      });
     }
   };
 

@@ -5,7 +5,8 @@ const myMLHMock = require('../src');
 const secrets = require('./secrets');
 
 const MY_MLH_MOCK_KEYS = [
-  'getAuthenticatedUsers'
+  'getAuthenticatedUsers',
+  'getUnauthenticatedUsers'
 ];
 
 describe('myMLHMock', function () {
@@ -55,6 +56,17 @@ describe('myMLHMock', function () {
         return {
           id: user.id,
           accessToken: db.accessTokens.getForUserId(user.id)
+        };
+      }));
+    });
+  });
+
+  describe('get unauthenticated users', function () {
+    it('should return an array of user ID, access Token tuples', function () {
+      const tuples = myMLHMock.instance.getUnauthenticatedUsers();
+      expect(tuples).to.eql(db.users.getUnauthenticatedUsers().map(function (user) {
+        return {
+          id: user.id
         };
       }));
     });
