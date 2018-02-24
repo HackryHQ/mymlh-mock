@@ -51,7 +51,8 @@ const getAll = () => [
 ];
 
 const match = (scope, existingScopes = getAll()) => {
-  const scopes = scope ? scope.split('+') : getAll();
+  // The + is interpreted as a space.
+  const scopes = scope ? scope.split(' ') : getAll();
   const permittedScopes = scopes.reduce((permitted, scopeCandidate) => {
     if (existingScopes.includes(scopeCandidate)) permitted.push(scopeCandidate);
     return permitted;

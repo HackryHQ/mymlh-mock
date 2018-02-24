@@ -66,15 +66,15 @@ describe('scopes', () => {
     });
 
     it('should use all scopes as existing scopes if not provided', () => {
-      expect(scopes.match('email+birthday')).to.deep.equal(['email', 'birthday']);
+      expect(scopes.match('email birthday')).to.deep.equal(['email', 'birthday']);
     });
 
     it('should match against existing scopes', () => {
-      expect(scopes.match('email+birthday', ['phone_number', 'demographics', 'birthday', 'education'])).to.deep.equal(['birthday']);
+      expect(scopes.match('email birthday', ['phone_number', 'demographics', 'birthday', 'education'])).to.deep.equal(['birthday']);
     });
 
     it('should return an empty array if none are', () => {
-      expect(scopes.match('email+birthday', ['phone_number', 'demographics', 'education'])).to.deep.equal([]);
+      expect(scopes.match('email birthday', ['phone_number', 'demographics', 'education'])).to.deep.equal([]);
     });
   });
 });

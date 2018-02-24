@@ -113,7 +113,7 @@ describe('users', () => {
           response_type: 'code',
           client_id: clientId,
           redirect_uri: db.getCallbackURLs()[0],
-          scope: requestedScopes.join('+'),
+          scope: requestedScopes.join(' '),
         },
       },
       (error, response, body) => {
