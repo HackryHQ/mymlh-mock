@@ -53,4 +53,31 @@ describe('scopes', function () {
       expect(scopes.applyScopesToUser(allScopes, user)).to.have.keys(allFields);
     });
   });
+
+  describe('match', function () {
+    it('should use all scopes if no scope provided', function () {
+      expect(scopes.match()).to.deep.equal(scopes.getAllScopes());
+    });
+
+    it('should use all scopes as existing scopes if not provided', function () {
+      expect(scopes.match('email+birthday')).to.deep.equal(['email', 'birthday']);
+    });
+
+    it('should match against existing scopes', function () {
+      expect(scopes.match('email+birthday', [
+        'phone_number',
+        'demographics',
+        'birthday',
+        'education'
+      ])).to.deep.equal(['birthday']);
+    });
+
+    it('should return an empty array if none are', function () {
+      expect(scopes.match('email+birthday', [
+        'phone_number',
+        'demographics',
+        'education'
+      ])).to.deep.equal([]);
+    });
+  });
 });

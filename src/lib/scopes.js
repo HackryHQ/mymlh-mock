@@ -63,16 +63,35 @@ const applyScopesToUser = function (scopes, completeUser) {
   return user;
 };
 
+const getAll = function () {
+  return [
+    EMAIL_SCOPE,
+    PHONE_NUMBER_SCOPE,
+    DEMOGRAPHICS_SCOPE,
+    BIRTHDAY_SCOPE,
+    EDUCATION_SCOPE,
+    EVENT_SCOPE
+  ]
+};
+
+const match = function (scope, existingScopes) {
+  if (!existingScopes) {
+    existingScopes = getAll();
+  }
+
+  const scopes = scope ? scope.split('+') : getAll()
+  const permittedScopes = scopes.reduce(function (permitted, scope) {
+    if (existingScopes.includes(scope)) {
+      permitted.push(scope);
+    }
+
+    return permitted;
+  }, []);
+  return permittedScopes;
+}
+
 module.exports = {
   applyScopesToUser: applyScopesToUser,
-  getAllScopes: function () {
-    return [
-      EMAIL_SCOPE,
-      PHONE_NUMBER_SCOPE,
-      DEMOGRAPHICS_SCOPE,
-      BIRTHDAY_SCOPE,
-      EDUCATION_SCOPE,
-      EVENT_SCOPE
-    ]
-  }
+  getAllScopes: getAll,
+  match: match
 };
