@@ -3,7 +3,7 @@ const scopes = require('./scopes');
 const urls = require('./urls');
 const userFixtures = require('../fixtures/users');
 
-const defaultStore = Object.freeze({
+const defaultStore = {
   clientId: null,
   clientSecret: null,
   callbackURLs: [],
@@ -15,7 +15,7 @@ const defaultStore = Object.freeze({
   accessTokens: {},
   authenticatedUsers: userFixtures.authenticatedUsers,
   unauthenticatedUsers: userFixtures.unauthenticatedUsers
-});
+};
 
 var store = JSON.parse(JSON.stringify(defaultStore));
 

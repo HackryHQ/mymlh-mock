@@ -27,7 +27,13 @@ module.exports = function (config) {
   });
 
   db.setCallbackURLs(config.callbackURLs);
+
+  // Add access tokens for package-defined user fixtures.
   db.accessTokens.addForAuthenticatedUsers();
+
+  // Add user-defined user fixtures.
+  (config.authenticatedUsers || []).forEach(db.users.addAuthenticatedUser);
+  (config.unauthenticatedUsers || []).forEach(db.users.addUnauthenticatedUser);
 
   module.exports.instance = {
     getAuthenticatedUsers() {
