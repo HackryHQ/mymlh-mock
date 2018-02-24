@@ -158,7 +158,7 @@ describe('db', function () {
           return user.id
         }).includes(101);
 
-        db.users.addAuthenticatedUser({ id: 102 });
+        db.users.addUnauthenticatedUser({ id: 102 });
         db.users.getAuthenticatedUsers().map(function (user) {
           return user.id
         }).includes(102);
