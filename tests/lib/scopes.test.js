@@ -2,7 +2,6 @@ const chai = require('chai');
 const db = require('../../src/lib/db');
 const expect = chai.expect;
 const scopes = require('../../src/lib/scopes');
-const users = require('../../src/fixtures/users');
 
 const DEFAULT_FIELDS = ['id', 'first_name', 'last_name', 'created_at', 'updated_at'];
 
@@ -26,7 +25,7 @@ const SCOPES = [{
   fields: ['shirt_size', 'dietary_restrictions', 'special_needs']
 }];
 
-const user = users.getUnauthenticatedUserForId(db.currentUserId);
+const user = db.users.getUnauthenticatedUserForId(db.currentUserId);
 
 describe('scopes', function () {
   describe('apply scopes to user', function () {

@@ -7,11 +7,10 @@ const redirects  = require('./redirects');
 const request = require('request');
 const scopes = require('../../../src/lib/scopes');
 const secrets = require('../../secrets');
-const users = require('../../../src/fixtures/users');
 
 const USER_URL = 'https://my.mlh.io/api/v2/user.json';
 
-describe('user', function () {
+describe('users', function () {
   before(function () {
     myMLHMock.instance = null;
     myMLHMock({
@@ -19,6 +18,8 @@ describe('user', function () {
       clientSecret: secrets.MY_MLH_CLIENT_SECRET,
       callbackURLs: secrets.CALLBACK_URLS
     });
+
+    redirects.mockAuthorizationCodeFlow();
   });
 
   after(function () {
@@ -56,7 +57,7 @@ describe('user', function () {
       }
     }, function (error, response, body) {
       expect(response).to.have.property('statusCode').equal(200);
-      const user = scopes.applyScopesToUser(scopes.getAllScopes(), users.getUserForId(userId));
+      const user = scopes.applyScopesToUser(scopes.getAllScopes(), db.users.getUserForId(userId));
       expect(body).to.deep.equal(user)
       done();
     });
@@ -88,10 +89,10 @@ describe('user', function () {
         }
       }, function (error, response, body) {
         expect(response).to.have.property('statusCode').equal(200);
-        const user = scopes.applyScopesToUser(requestedScopes, users.getUserForId(currentUserId));
+        const user = scopes.applyScopesToUser(requestedScopes, db.users.getUserForId(currentUserId));
         expect(body).to.deep.equal(user)
         done();
       });
     });
   });
-})
+});

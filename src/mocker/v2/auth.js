@@ -17,9 +17,11 @@ scope.get('/oauth/authorize').query(true).reply(function (path) {
   }
 
   const currentUserId = db.getCurrentUserId();
+  const user = db.users.getUserForId(currentUserId);
+  const permittedScope = scopes.match(query.scope, user.willPermitScopes).join('+');
 
   if (query.response_type === 'token') {
-    const accessToken = db.accessTokens.addForUserId(currentUserId, query.scope || scopes.getAllScopes().join('+'));
+    const accessToken = db.accessTokens.addForUserId(currentUserId, permittedScope);
     return [302, undefined, {
       Location: query.redirect_uri + '?access_token=' + accessToken
     }]
@@ -27,7 +29,7 @@ scope.get('/oauth/authorize').query(true).reply(function (path) {
 
   const code = db.authorizationCodes.addForUserId(currentUserId, {
     redirectURL: query.redirect_uri,
-    scope: query.scope || scopes.getAllScopes().join('+')
+    scope: permittedScope
   });
 
   return [302, undefined, {

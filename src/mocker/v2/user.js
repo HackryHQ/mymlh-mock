@@ -2,7 +2,6 @@ const db = require('../../lib/db');
 const nock = require('nock');
 const qs = require('qs');
 const scopes = require('../../lib/scopes');
-const users = require('../../fixtures/users');
 
 const scope = nock('https://my.mlh.io/api/v2').persist();
 
@@ -21,8 +20,8 @@ scope.get('/user.json').query(true).reply(function (path) {
   }
 
   const { scope } = db.accessTokens.getForUserId(userId);
-  const user = users.getUserForId(userId);
+  const user = db.users.getUserForId(userId);
 
   // Prioritize user fixture "scopes" key.
-  return [200, scopes.applyScopesToUser(user.scopes || scope.split('+'), user)];
+  return [200, scopes.applyScopesToUser(scope.split('+'), user)];
 });

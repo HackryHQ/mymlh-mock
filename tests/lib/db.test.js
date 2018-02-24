@@ -2,20 +2,24 @@ const chai = require('chai');
 const expect = chai.expect;
 const db = require('../../src/lib/db');
 const secrets = require('../secrets');
-const users = require('../../src/fixtures/users');
 
 describe('db', function () {
   before(function () {
     db.reset();
   });
 
+  after(function () {
+    db.reset();
+  });
+
   describe('init', function () {
     it('should initialize to default values', function () {
-      expect(db.get()).to.eql(db.defaultStore);
+      expect(db.get()).to.deep.equal(db.defaultStore);
     });
 
     it('should add access tokens for all previously authenticated users', function () {
-      users.authenticatedUsers.forEach(function (authenticatedUser) {
+      db.accessTokens.addForAuthenticatedUsers();
+      db.users.getAuthenticatedUsers().forEach(function (authenticatedUser) {
         expect(db.accessTokens.getForUserId(authenticatedUser.id).accessToken).to.have.lengthOf(64);
       });
     });
@@ -106,6 +110,79 @@ describe('db', function () {
       const userId = db.defaultStore.currentUserId;
       db.setCurrentUserId(userId)
       expect(db.getCurrentUserId()).to.equal(userId);
+    });
+  });
+
+  describe('users', function () {
+    describe('get user by ID', function () {
+      it('should return null for invalid user IDs', function () {
+        expect(db.users.getAuthenticatedUserForId(2)).to.be.null;
+        expect(db.users.getAuthenticatedUserForId(101)).to.be.null
+        expect(db.users.getUnauthenticatedUserForId(1)).to.be.null;
+        expect(db.users.getUnauthenticatedUserForId(101)).to.be.null
+        expect(db.users.getUserForId(101)).to.be.null
+      });
+
+      it('should return the user fixture for the specified user ID', function () {
+        expect(db.users.getAuthenticatedUserForId(1)).to.have.property('id').equal(1);
+        expect(db.users.getUnauthenticatedUserForId(2)).to.have.property('id').equal(2);
+        expect(db.users.getUserForId(1)).to.have.property('id').equal(1);
+        expect(db.users.getUserForId(2)).to.have.property('id').equal(2);
+      });
+    });
+
+    describe('add user', function () {
+      it('should require a user id', function () {
+        const error = 'All users must have an id.';
+        expect(function () {
+          db.users.addAuthenticatedUser();
+        }).to.throw(Error, error);
+        expect(function () {
+          db.users.addUnauthenticatedUser();
+        }).to.throw(Error, error);
+      });
+
+      it('should disallow reserved user ids', function () {
+        const error = 'User ids below 100 are restricted';
+        expect(function () {
+          db.users.addAuthenticatedUser({ id: 99 });
+        }).to.throw(Error, error);
+        expect(function () {
+          db.users.addUnauthenticatedUser({ id: 99 });
+        }).to.throw(Error, error);
+      });
+
+      it('should add a user to the in-memory list', function () {
+        db.users.addAuthenticatedUser({ id: 101 });
+        db.users.getAuthenticatedUsers().map(function (user) {
+          return user.id
+        }).includes(101);
+
+        db.users.addAuthenticatedUser({ id: 102 });
+        db.users.getAuthenticatedUsers().map(function (user) {
+          return user.id
+        }).includes(102);
+      });
+
+      it('should disallow duplicate user ids', function () {
+        let error = 'Duplicate user id: 103';
+        db.users.addAuthenticatedUser({ id: 103 });
+        expect(function () {
+          db.users.addAuthenticatedUser({ id: 103 });
+        }).to.throw(Error, error);
+        expect(function () {
+          db.users.addUnauthenticatedUser({ id: 103 });
+        }).to.throw(Error, error);
+
+        error = 'Duplicate user id: 104';
+        db.users.addUnauthenticatedUser({ id: 104 });
+        expect(function () {
+          db.users.addAuthenticatedUser({ id: 104 });
+        }).to.throw(Error, error);
+        expect(function () {
+          db.users.addUnauthenticatedUser({ id: 104 });
+        }).to.throw(Error, error);
+      });
     });
   });
 });

@@ -3,7 +3,6 @@ const db = require('../src/lib/db');
 const expect = chai.expect;
 const myMLHMock = require('../src');
 const secrets = require('./secrets');
-const users = require('../src/fixtures/users');
 
 const MY_MLH_MOCK_KEYS = [
   'getAuthenticatedUsers'
@@ -52,7 +51,7 @@ describe('myMLHMock', function () {
   describe('get authenticated users', function () {
     it('should return an array of user ID, access Token tuples', function () {
       const tuples = myMLHMock.instance.getAuthenticatedUsers();
-      expect(tuples).to.eql(users.authenticatedUsers.map(function (user) {
+      expect(tuples).to.eql(db.users.getAuthenticatedUsers().map(function (user) {
         return {
           id: user.id,
           accessToken: db.accessTokens.getForUserId(user.id)

@@ -1,6 +1,6 @@
 const random = require('./random');
 const urls = require('./urls');
-const users = require('../fixtures/users');
+const userFixtures = require('../fixtures/users');
 
 const defaultStore = Object.freeze({
   clientId: null,
@@ -11,10 +11,75 @@ const defaultStore = Object.freeze({
   // Map user ID to authorization code.
   authorizationCodes: {},
   // Map user ID to access token.
-  accessTokens: {}
+  accessTokens: {},
+  authenticatedUsers: userFixtures.authenticatedUsers,
+  unauthenticatedUsers: userFixtures.unauthenticatedUsers
 });
 
-var store = Object.assign({}, defaultStore);
+var store = JSON.parse(JSON.stringify(defaultStore));
+
+const getUserForId = function(userId) {
+  return store.authenticatedUsers.concat(store.unauthenticatedUsers).filter(function (user) {
+    return user.id == userId;
+  })[0] || null;
+};
+
+const checkUserId = function (userId) {
+  if (userId === undefined || userId === null) {
+    throw new Error('All users must have an id.');
+  }
+
+  if (userId < userFixtures.MAX_RESERVED_USER_ID) {
+    throw new Error('User ids below ' + userFixtures.MAX_RESERVED_USER_ID + ' are restricted.');
+  }
+
+  if (getUserForId(userId) !== null) {
+    throw new Error('Duplicate user id: ' + userId);
+  }
+}
+
+const users = {
+  getAuthenticatedUserForId: function (userId) {
+    return store.authenticatedUsers.filter(function (user) {
+      return user.id == userId;
+    })[0] || null;
+  },
+  getUnauthenticatedUserForId: function (userId) {
+    return store.unauthenticatedUsers.filter(function (user) {
+      return user.id == userId;
+    })[0] || null;
+  },
+  getUserForId,
+  addAuthenticatedUser: function (user = {}) {
+    checkUserId(user.id);
+    store.authenticatedUsers.push(user);
+  },
+  addUnauthenticatedUser: function (user = {}) {
+    checkUserId(user.id);
+    store.unauthenticatedUsers.push(user);
+  },
+  getAuthenticatedUsers: function () {
+    return store.authenticatedUsers;
+  },
+  unauthenticatedUsers: function () {
+    return store.unauthenticatedUsers;
+  }
+};
+
+const addAccessTokenForUserId = function (userId, scope) {
+  store.accessTokens[userId] = {
+    accessToken: random.string(64),
+    scope: scope
+  };
+
+  return store.accessTokens[userId].accessToken;
+};
+
+const addAuthenticatedUserAccessTokens = function () {
+  users.getAuthenticatedUsers().forEach(function (authenticatedUser) {
+    addAccessTokenForUserId(authenticatedUser.id, authenticatedUser.didPermitScopes.join('+'));
+  });
+};
 
 const db = {
   defaultStore: defaultStore,
@@ -22,7 +87,7 @@ const db = {
     return store;
   },
   reset: function () {
-    store = Object.assign({}, defaultStore);
+    store = JSON.parse(JSON.stringify(defaultStore));
     return store;
   },
   setClient: function (client) {
@@ -80,14 +145,8 @@ const db = {
     }
   },
   accessTokens: {
-    addForUserId: function (userId, scope) {
-      store.accessTokens[userId] = {
-        accessToken: random.string(64),
-        scope: scope
-      };
-
-      return store.accessTokens[userId].accessToken;
-    },
+    addForAuthenticatedUsers: addAuthenticatedUserAccessTokens,
+    addForUserId: addAccessTokenForUserId,
     getForUserId: function (userId) {
       return store.accessTokens[userId];
     },
@@ -102,7 +161,8 @@ const db = {
 
       return userId;
     }
-  }
+  },
+  users
 };
 
 module.exports = db;
