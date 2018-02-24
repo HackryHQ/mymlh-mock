@@ -1,4 +1,5 @@
 const random = require('./random');
+const scopes = require('./scopes');
 const urls = require('./urls');
 const userFixtures = require('../fixtures/users');
 
@@ -38,6 +39,21 @@ const checkUserId = function (userId) {
   }
 }
 
+const addAccessTokenForUserId = function (userId, scope) {
+  store.accessTokens[userId] = {
+    accessToken: random.string(64),
+    scope: scope
+  };
+
+  return store.accessTokens[userId].accessToken;
+};
+
+const addAuthenticatedUserAccessTokens = function () {
+  users.getAuthenticatedUsers().forEach(function (authenticatedUser) {
+    addAccessTokenForUserId(authenticatedUser.id, authenticatedUser.didPermitScopes.join('+'));
+  });
+};
+
 const users = {
   getAuthenticatedUserForId: function (userId) {
     return store.authenticatedUsers.filter(function (user) {
@@ -52,10 +68,13 @@ const users = {
   getUserForId,
   addAuthenticatedUser: function (user = {}) {
     checkUserId(user.id);
+    user.didPermitScopes = user.didPermitScopes || scopes.getAllScopes();
+    addAccessTokenForUserId(user.id, user.didPermitScopes);
     store.authenticatedUsers.push(user);
   },
   addUnauthenticatedUser: function (user = {}) {
     checkUserId(user.id);
+    user.willPermitScopes = user.willPermitScopes || scopes.getAllScopes();
     store.unauthenticatedUsers.push(user);
   },
   getAuthenticatedUsers: function () {
@@ -64,21 +83,6 @@ const users = {
   unauthenticatedUsers: function () {
     return store.unauthenticatedUsers;
   }
-};
-
-const addAccessTokenForUserId = function (userId, scope) {
-  store.accessTokens[userId] = {
-    accessToken: random.string(64),
-    scope: scope
-  };
-
-  return store.accessTokens[userId].accessToken;
-};
-
-const addAuthenticatedUserAccessTokens = function () {
-  users.getAuthenticatedUsers().forEach(function (authenticatedUser) {
-    addAccessTokenForUserId(authenticatedUser.id, authenticatedUser.didPermitScopes.join('+'));
-  });
 };
 
 const db = {

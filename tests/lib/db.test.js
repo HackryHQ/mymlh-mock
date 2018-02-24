@@ -1,6 +1,7 @@
 const chai = require('chai');
 const expect = chai.expect;
 const db = require('../../src/lib/db');
+const scopes = require('../../src/lib/scopes');
 const secrets = require('../secrets');
 
 describe('db', function () {
@@ -182,6 +183,18 @@ describe('db', function () {
         expect(function () {
           db.users.addUnauthenticatedUser({ id: 104 });
         }).to.throw(Error, error);
+      });
+
+      it('should add access tokens for authenticated users', function () {
+        db.users.addAuthenticatedUser({ id: 105 });
+        let accessToken = db.accessTokens.getForUserId(105)
+        expect(accessToken).to.have.property('accessToken');
+        expect(accessToken).to.have.property('scope').deep.equal(scopes.getAllScopes());
+
+        db.users.addAuthenticatedUser({ id: 106, didPermitScopes: ['email'] });
+        accessToken = db.accessTokens.getForUserId(106)
+        expect(accessToken).to.have.property('accessToken');
+        expect(accessToken).to.have.property('scope').deep.equal(['email']);
       });
     });
   });
