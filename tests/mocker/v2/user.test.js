@@ -63,6 +63,28 @@ describe('users', function () {
     });
   });
 
+  it('should filter authenticated users scopes with `didPermitScopes`', function () {
+    const userId = 101;
+    db.users.addAuthenticatedUser({
+      ...db.users.getUserForId(userId),
+      id: userId,
+      didPermitScopes: ['email', 'event']
+    });
+
+    request({
+      url: USER_URL,
+      json: true,
+      qs: {
+        access_token: db.accessTokens.getForUserId(userId).accessToken
+      }
+    }, function (error, response, body) {
+      expect(response).to.have.property('statusCode').equal(200);
+      const user = scopes.applyScopesToUser(['email', 'event'], db.users.getUserForId(userId));
+      expect(body).to.deep.equal(user)
+      done();
+    });
+  });
+
   it('should only provide scope properties', function (done) {
     const { clientId, clientSecret } = db.getClient();
     const requestedScopes = ['email', 'event'];
