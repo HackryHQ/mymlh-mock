@@ -116,6 +116,15 @@ const db = {
       .map(callbackURLRegex => callbackURLRegex.test(redirectURL))
       .reduce((accumulator, test) => (accumulator ? true : test), false);
   },
+  redirectURIForCode(code) {
+    return Object.keys(store.authorizationCodes).reduce((map, userId) => {
+      const authorizationCode = store.authorizationCodes[userId];
+      return {
+        ...map,
+        [authorizationCode.code]: authorizationCode,
+      };
+    }, {})[code].redirectURL;
+  },
   setCurrentUserId(userId) {
     if (users.getAuthenticatedUserForId(userId) !== null) {
       throw new Error('Current user ID must be for unauthenticated user.');

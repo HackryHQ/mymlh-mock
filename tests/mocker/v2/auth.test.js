@@ -92,7 +92,7 @@ describe('MyMLH OAuth', () => {
             qs: {
               response_type: 'code',
               client_id: clientId,
-              redirect_uri: db.getCallbackURLs()[0],
+              redirect_uri: `${db.getCallbackURLs()[0]}?param=value`,
             },
           },
           done,
@@ -272,7 +272,7 @@ describe('MyMLH OAuth', () => {
             json: true,
             qs: {
               grant_type: 'authorization_code',
-              redirect_uri: db.getCallbackURLs()[0],
+              redirect_uri: db.redirectURIForCode(code),
               client_id: clientId,
               client_secret: clientSecret,
               code,

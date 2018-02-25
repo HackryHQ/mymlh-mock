@@ -22,6 +22,15 @@ nock('https://my.mlh.io')
       return callback(null, [200, 'The redirect uri included is not valid.']);
     }
 
+    // Seperate the URI from parameters so the given query parameters may be
+    // merged with new query parameters.
+    const redirectURI = query.redirect_uri.split('?')[0];
+    let redirectURIQueryParams = {};
+
+    if (query.redirect_uri.includes('?')) {
+      redirectURIQueryParams = qs.parse(query.redirect_uri.slice(query.redirect_uri.indexOf('?') + 1));
+    }
+
     const currentUserId = db.getCurrentUserId();
     const user = db.users.getUserForId(currentUserId);
     const permittedScope = scopes.match(query.scope, user.willPermitScopes).join('+');
@@ -32,7 +41,10 @@ nock('https://my.mlh.io')
         302,
         undefined,
         {
-          Location: `${query.redirect_uri}?access_token=${accessToken}`,
+          Location: `${redirectURI}?${qs.stringify({
+            ...redirectURIQueryParams,
+            access_token: accessToken,
+          })}`,
         },
       ]);
     }
@@ -45,9 +57,10 @@ nock('https://my.mlh.io')
     return request(
       {
         method: 'GET',
-        url: query.redirect_uri,
+        url: redirectURI,
         followRedirect: false,
         qs: {
+          ...redirectURIQueryParams,
           code,
         },
       },
