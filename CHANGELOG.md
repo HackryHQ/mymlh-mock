@@ -7,8 +7,12 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## [Unreleased]
 
+## 0.1.0 - 2018-02-25
+
 ### Added
 
 * Mock MyMLH OAuth Implicit grant type.
 * Mock MyMLH OAuth Authorization Code grant type.
 * Mock `/user.json` API route.
+
+[unreleased]: https://github.com/HackryHQ/mymlh-mock/compare/v0.1.0...HEAD
