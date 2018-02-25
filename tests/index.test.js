@@ -5,7 +5,7 @@ const secrets = require('./secrets');
 const userFixtures = require('../src/fixtures/users');
 
 const { expect } = chai;
-const MY_MLH_MOCK_KEYS = ['getAuthenticatedUsers', 'getUnauthenticatedUsers'];
+const MY_MLH_MOCK_KEYS = ['getAuthenticatedUsers', 'getUnauthenticatedUsers', 'setCurrentUserId'];
 
 describe('myMLHMock', () => {
   describe('init', () => {

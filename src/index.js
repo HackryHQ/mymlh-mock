@@ -46,6 +46,7 @@ module.exports = (config = {}) => {
         id: user.id,
       }));
     },
+    setCurrentUserId: db.setCurrentUserId
   };
 
   return module.exports.instance;
