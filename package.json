@@ -1,7 +1,7 @@
 {
   "name": "mymlh-mock",
   "version": "0.0.0",
-  "description": "MyMLH API mock.",
+  "description": "MyMLH mock.",
   "main": "index.js",
   "scripts": {
     "test": "nyc --reporter=html mocha \"tests/**/*.test.js\""
