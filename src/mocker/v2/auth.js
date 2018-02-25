@@ -9,7 +9,7 @@ nock('https://my.mlh.io')
   .get('/oauth/authorize')
   .query(true)
   .reply((path, emptyBody, callback) => {
-    const query = qs.parse(path.split('?')[1]);
+    const query = qs.parse(path.slice(path.indexOf('?') + 1));
 
     if (query.response_type !== 'code' && query.response_type !== 'token') {
       return callback(null, [200, 'The authorization server does not support this response type.']);
@@ -60,7 +60,7 @@ nock('https://my.mlh.io')
   .post('/oauth/token')
   .query(true)
   .reply((path) => {
-    const query = qs.parse(path.split('?')[1]);
+    const query = qs.parse(path.slice(path.indexOf('?') + 1));
 
     // The MyMLH API first checks grant_type correctness when present no matter if
     // other parameters are missing.

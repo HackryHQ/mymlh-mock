@@ -8,7 +8,7 @@ nock('https://my.mlh.io')
   .get('/api/v2/user.json')
   .query(true)
   .reply((path) => {
-    const query = qs.parse(path.split('?')[1]);
+    const query = qs.parse(path.slice(path.indexOf('?') + 1));
     const userId = db.accessTokens.getUserIdFor(query.access_token);
 
     if (!userId) {

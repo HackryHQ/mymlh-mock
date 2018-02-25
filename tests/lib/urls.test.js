@@ -12,11 +12,13 @@ describe('urls', () => {
         const shallowSubpath = `${url}/`;
         const subpath = `${url}/subpath`;
         const deepSubpath = `${url}/a/very/very/deep/subpath`;
+        const subpathQueryParam = `${url}/subpath?param=value`
         const regex = urls.callback.regex(url);
         expect(regex.test(exact)).to.equal(true);
         expect(regex.test(shallowSubpath)).to.equal(true);
         expect(regex.test(subpath)).to.equal(true);
         expect(regex.test(deepSubpath)).to.equal(true);
+        expect(regex.test(subpathQueryParam)).to.equal(true);
         expect(regex.test('http://hackry.io')).to.equal(false);
         expect(regex.test('https://hackry.iou')).to.equal(false);
       });
