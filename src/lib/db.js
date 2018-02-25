@@ -126,12 +126,8 @@ const db = {
     }, {})[code].redirectURL;
   },
   setCurrentUserId(userId) {
-    if (users.getAuthenticatedUserForId(userId) !== null) {
-      throw new Error('Current user ID must be for unauthenticated user.');
-    }
-
-    if (users.getUnauthenticatedUserForId(userId) === null) {
-      throw new Error('Invalid unauthenticated current user ID.');
+    if (users.getUserForId(userId) === null) {
+      throw new Error(`Unknown user id: ${userId}`);
     }
 
     store.currentUserId = userId;

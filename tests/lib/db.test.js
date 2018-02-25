@@ -92,19 +92,25 @@ describe('db', () => {
   });
 
   describe('set current user ID', () => {
-    it('should require an unauthenticated user ID', () => {
-      expect(() => {
-        db.setCurrentUserId(1);
-      }).to.throw(Error, 'Current user ID must be for unauthenticated user.');
-    });
-
-    it('should require a valid unauthenticated user ID', () => {
+    it('should require a valid user ID', () => {
       expect(() => {
         db.setCurrentUserId(101);
-      }).to.throw(Error, 'Invalid unauthenticated current user ID.');
+      }).to.throw(Error, 'Unknown user id: 101');
     });
 
-    it('should set the curren user ID', () => {
+    it('should allow an authenticated user ID', () => {
+      expect(() => {
+        db.setCurrentUserId(1);
+      }).not.to.throw(Error);
+    });
+
+    it('should allow an unauthenticated user ID', () => {
+      expect(() => {
+        db.setCurrentUserId(2);
+      }).not.to.throw(Error);
+    });
+
+    it('should set the current user ID', () => {
       const userId = db.defaultStore.currentUserId;
       db.setCurrentUserId(userId);
       expect(db.getCurrentUserId()).to.equal(userId);
